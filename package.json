@@ -1,0 +1,9 @@
+{
+  "name": "smart-contracts",
+  "version": "0.0.1",
+  "description": "library of smart contracts",
+  "main": "index.js",
+  "repository": "https://github.com/onmychain/smart-contracts.git",
+  "author": "Cyrille <cyri113>",
+  "license": "MIT"
+}
