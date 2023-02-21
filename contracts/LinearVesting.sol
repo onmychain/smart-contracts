@@ -30,6 +30,7 @@ contract LinearVesting {
         require(block.timestamp >= startTime, "LinearVesting: has not started");
         uint amount = _available(msg.sender);
         token.safeTransfer(msg.sender, amount);
+        claimed[msg.sender] += amount;
     }
 
     function _available(address address_) internal view returns (uint) {

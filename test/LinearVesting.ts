@@ -77,6 +77,17 @@ describe("LinearVesting", function () {
                 [amount.mul(-1), amount]
             )
         })
+        it("should update claimed", async function () {
+            const { contract, token, recipients, allocations, startTime, duration } = await loadFixture(deploy)
+            await time.increaseTo(startTime)
+            await time.increase((duration / 2) - 1) // increase to 50% of tokens being available
+
+            const allocation = allocations[0];
+            const amount = allocation.div(2) // 50%
+            expect(await contract.claimed(recipients[0].address)).to.eq(0)
+            await contract.connect(recipients[0]).claim()
+            expect(await contract.claimed(recipients[0].address)).to.eq(amount)
+        })
     })
 
 })
