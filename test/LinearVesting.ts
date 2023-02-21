@@ -12,7 +12,7 @@ describe("LinearVesting", function () {
 
         // generate array of recipients and array of allocations
         // recipients[0] will have allocations[0]
-        const recipients = (await ethers.getSigners()).map(s => s.address)
+        const recipients = await ethers.getSigners()
         const allocations = recipients.map((r, idx) => ethers.utils.parseEther((idx * 10).toString()))
 
         const startTime = (await time.latest()) + 60 // starts 60 seconds after deployment
@@ -20,7 +20,7 @@ describe("LinearVesting", function () {
 
         // deploy the contract
         const Contract = await ethers.getContractFactory("LinearVesting")
-        const contract = await Contract.deploy(token.address, recipients, allocations, startTime, duration) // add the args
+        const contract = await Contract.deploy(token.address, recipients.map(s => s.address), allocations, startTime, duration) // add the args
         await contract.deployed()
 
         return { contract, token, recipients, allocations, startTime, duration }
@@ -37,7 +37,7 @@ describe("LinearVesting", function () {
             for (let index = 0; index < recipients.length; index++) {
                 const recipient = recipients[index];
                 const allocation = allocations[index];
-                expect(await contract.allocation(recipient)).to.eq(allocation)
+                expect(await contract.allocation(recipient.address)).to.eq(allocation)
             }
         })
         it("should have a start time", async function () {
@@ -47,6 +47,15 @@ describe("LinearVesting", function () {
         it("should have a duration", async function () {
             const { contract, duration } = await loadFixture(deploy)
             expect(await contract.duration()).to.eq(duration)
+        })
+    })
+
+    describe("claim", function () {
+        it("should revert before start time", async function () {
+            const { contract, recipients } = await loadFixture(deploy)
+            for await (const recipient of recipients) {
+                await expect(contract.connect(recipient).claim()).to.be.revertedWith("LinearVesting: has not started")
+            }
         })
     })
 

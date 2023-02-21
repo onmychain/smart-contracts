@@ -22,4 +22,8 @@ contract LinearVesting {
             allocation[recipients_[i]] = allocations_[i];
         }
     }
+
+    function claim() external {
+        require(block.timestamp > startTime, "LinearVesting: has not started");
+    }
 }
