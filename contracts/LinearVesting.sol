@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+import "hardhat/console.sol";
+
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract LinearVesting {
@@ -12,6 +14,7 @@ contract LinearVesting {
     uint public duration;
 
     mapping(address => uint) public allocation;
+    mapping(address => uint) public claimed;
 
 
     constructor(IERC20 token_, address[] memory recipients_, uint[] memory allocations_, uint startTime_, uint duration_) {
@@ -24,6 +27,16 @@ contract LinearVesting {
     }
 
     function claim() external {
-        require(block.timestamp > startTime, "LinearVesting: has not started");
+        require(block.timestamp >= startTime, "LinearVesting: has not started");
+        uint amount = _available(msg.sender);
+        token.safeTransfer(msg.sender, amount);
+    }
+
+    function _available(address address_) internal view returns (uint) {
+        return _released(address_) - claimed[address_];
+    }
+
+    function _released(address address_) internal view returns (uint) {
+        return (allocation[address_] * (block.timestamp - startTime)) / duration;
     }
 }
