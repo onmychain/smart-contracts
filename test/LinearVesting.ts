@@ -144,6 +144,32 @@ describe("LinearVesting", function () {
                 expect(await contract.outstanding(recipient.address)).to.eq(allocation.div(2))
             })
         })
+
+        describe("after", function () {
+            let contract: Contract
+            let recipient: SignerWithAddress
+            let allocation: BigNumber
+
+            beforeEach(async function() {
+                const fixture = await loadFixture(deploy)
+                contract = fixture.contract
+                recipient = fixture.recipients[0]
+                allocation = fixture.allocations[0]
+                await time.increaseTo(fixture.startTime)
+                await time.increase(fixture.duration)
+                await contract.connect(recipient).claim()
+            })
+
+            it("should have 100% released", async function () {
+                expect(await contract.released(recipient.address)).to.eq(allocation)
+            })
+            it("should have 0% available", async function () {
+                expect(await contract.available(recipient.address)).to.eq(0)
+            })
+            it("should have 0% outstanding", async function () {
+                expect(await contract.outstanding(recipient.address)).to.eq(0)
+            })
+        })
     })
 
 

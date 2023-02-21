@@ -50,6 +50,14 @@ contract LinearVesting {
     }
 
     function _released(address address_) internal view returns (uint) {
-        return (allocation[address_] * (block.timestamp - startTime)) / duration;
+        if (block.timestamp < startTime) {
+            return 0;
+        } else {
+            if (block.timestamp > startTime + duration) {
+                return allocation[address_];
+            } else {
+                return (allocation[address_] * (block.timestamp - startTime)) / duration;
+            }
+        }
     }
 }
