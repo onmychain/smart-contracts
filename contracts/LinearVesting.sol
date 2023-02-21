@@ -33,6 +33,18 @@ contract LinearVesting {
         claimed[msg.sender] += amount;
     }
 
+    function available(address address_) external view returns (uint) {
+        return _available(address_);
+    }
+
+    function released(address address_) external view returns (uint) {
+        return _released(address_);
+    }
+
+    function outstanding(address address_) external view returns (uint) {
+        return allocation[address_] - _released(address_);
+    }
+
     function _available(address address_) internal view returns (uint) {
         return _released(address_) - claimed[address_];
     }
