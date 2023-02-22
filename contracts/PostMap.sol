@@ -13,6 +13,7 @@ contract PostMap is Ownable {
     }
 
     event SetFee(address sender, uint fee);
+    event Create(address sender, string uri, uint expiryTime, uint fee);
     
     uint public fee;
 
@@ -22,6 +23,11 @@ contract PostMap is Ownable {
         fee = fee_;
     }
 
+    modifier onlyFee {
+        require(msg.value == fee, "Incorrect fee");
+        _;
+    }
+
     function length() external view returns (uint) {
         return posts.length;
     }
@@ -29,6 +35,11 @@ contract PostMap is Ownable {
     function setFee(uint fee_) external onlyOwner {
         fee = fee_;
         emit SetFee(msg.sender, fee);
+    }
+
+    function create(string calldata uri_, uint expiryTime_) external payable onlyFee {
+        posts.push(Post(uri_, expiryTime_));
+        emit Create(msg.sender, uri_, expiryTime_, msg.value);
     }
 
 }

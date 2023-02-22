@@ -1,4 +1,4 @@
-import { loadFixture } from "@nomicfoundation/hardhat-network-helpers"
+import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers"
 import { expect } from "chai"
 import { ethers } from "hardhat"
 
@@ -56,12 +56,34 @@ describe("PostMap", function () {
         })
     })
     describe("create post", function () {
-        it("should create a post")
+        const uri = "some-ipfs-uri"
+        let expiry: number
+
+        beforeEach(async function () {
+            expiry = await time.latest() + (60 * 60)
+        })
+
+        it("should create a post", async function () {
+            const { contract, poster, fee } = await loadFixture(deploy)
+            await contract.connect(poster).create(uri, expiry, { value: fee })
+            expect(await contract.length()).to.eq(1)
+        })
         describe("validations", function () {
-            it("should revert if fee incorrect")
+            it("should revert if fee incorrect", async function () {
+                const { contract, poster } = await loadFixture(deploy)
+                await expect(contract.connect(poster).create(uri, expiry, { value: ethers.utils.parseEther("0") })).to.be.revertedWith("Incorrect fee")
+            })
         })
         describe("events", function () {
-            it("should emit CreatePost event")
+            it("should emit Create event", async function () {
+                const { contract, poster, fee } = await loadFixture(deploy)
+                await expect(contract.connect(poster).create(uri, expiry, { value: fee })).to.emit(contract, "Create").withArgs(
+                    poster.address,
+                    uri,
+                    expiry,
+                    fee
+                )
+            })
         })
     })
     describe("clean up posts", function () {
