@@ -4,6 +4,7 @@ pragma solidity ^0.8.9;
 import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 
 contract PostMap is Ownable {
 
@@ -18,10 +19,12 @@ contract PostMap is Ownable {
     
     uint public fee;
     bool private autoclean = false;
+    address payable private payee;
 
     Post[] public posts;
 
-    constructor(uint fee_) {
+    constructor(address payable payee_, uint fee_) {
+        payee = payee_;
         fee = fee_;
     }
 
@@ -42,6 +45,7 @@ contract PostMap is Ownable {
     function create(string calldata uri_, uint expiryTime_) external payable onlyFee {
         posts.push(Post(uri_, expiryTime_));
         emit Create(msg.sender, uri_, expiryTime_, msg.value);
+        Address.sendValue(payee, address(this).balance);
     }
 
     function cleanup() external {
@@ -72,6 +76,10 @@ contract PostMap is Ownable {
         }
         posts.pop();
         emit Remove(msg.sender, 1);
+    }
+
+    function setPayee(address payable payee_) external onlyOwner {
+        payee = payee_;
     }
 
 }

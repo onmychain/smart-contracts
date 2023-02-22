@@ -3,18 +3,18 @@ import { expect } from "chai"
 import { ethers } from "hardhat"
 
 describe("PostMap", function () {
-
+    
     async function deploy() {
-
+        
         const fee = ethers.utils.parseEther("0.1")
+        const [deployer, payee, poster] = await ethers.getSigners()
 
         const Contract = await ethers.getContractFactory("PostMap")
-        const contract = await Contract.deploy(fee)
+        const contract = await Contract.deploy(payee.address, fee)
         await contract.deployed()
 
-        const [deployer, poster] = await ethers.getSigners()
 
-        return { contract, fee, deployer, poster }
+        return { contract, fee, deployer, payee, poster }
     }
 
     describe("deploy", function () {
@@ -58,15 +58,22 @@ describe("PostMap", function () {
     describe("create post", function () {
         const uri = "some-ipfs-uri"
         let expiry: number
-        
+
         beforeEach(async function () {
             expiry = await time.latest() + (60 * 60)
         })
-        
+
         it("should create a post", async function () {
             const { contract, poster, fee } = await loadFixture(deploy)
             await contract.connect(poster).create(uri, expiry, { value: fee })
             expect(await contract.length()).to.eq(1)
+        })
+        it("should send fee to payee", async function () {
+            const { contract, poster, payee, fee } = await loadFixture(deploy)
+            await expect(contract.connect(poster).create(uri, expiry, { value: fee })).to.changeEtherBalances(
+                [poster, payee],
+                [fee.mul(-1), fee]
+            )
         })
         describe("validations", function () {
             it("should revert if fee incorrect", async function () {
@@ -82,10 +89,10 @@ describe("PostMap", function () {
                     uri,
                     expiry,
                     fee
-                    )
-                })
+                )
             })
         })
+    })
     describe("clean up posts", function () {
 
         const uri = "some-ipfs-uri"
@@ -161,13 +168,17 @@ describe("PostMap", function () {
             })
         })
     })
-    describe("release funds", function () {
-        it("should send funds to address")
-        describe("validations", function () {
-            it("should revert if not owner")
+    describe("set payee", function () {
+        it("should set payee", async function () {
+            const { contract, deployer } = await loadFixture(deploy)
+            await contract.setPayee(deployer.address)
         })
-        describe("events", function () {
-            it("should emit Release event")
+        describe("validations", function () {
+            it("should revert if not owner", async function () {
+                const { contract, poster, fee } = await loadFixture(deploy)
+                let expiry = await time.latest()
+                await expect(contract.connect(poster).setPayee(poster.address)).to.be.reverted
+            })
         })
     })
 })
