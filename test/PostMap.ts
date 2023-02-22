@@ -109,7 +109,7 @@ describe("PostMap", function () {
             expect(await contract.length()).to.eq(2)
         })
         describe("events", function () {
-            it("should emit DeletePost event", async function () {
+            it("should emit Remove event", async function () {
                 const { contract, poster, fee } = await loadFixture(deploy)
                 // create 4 posts
                 let expiry = await time.latest() + 60
@@ -123,17 +123,42 @@ describe("PostMap", function () {
                 // increase by 130 seconds
                 // the first two posts are now expired
                 await time.increase(130)
-                await expect(contract.connect(poster).cleanup()).to.emit(contract, "Delete").withArgs(poster.address, 2)
+                await expect(contract.connect(poster).cleanup()).to.emit(contract, "Remove").withArgs(poster.address, 2)
             })
         })
     })
     describe("remove post", function () {
-        it("should remove the post at the index")
+        const uri = "some-ipfs-uri"
+        it("should remove the post at the index", async function () {
+            const { contract, poster, fee } = await loadFixture(deploy)
+            // create 4 posts
+            let expiry = await time.latest()
+            await contract.connect(poster).create(uri, expiry, { value: fee })
+            await contract.connect(poster).create(uri, expiry, { value: fee })
+            await contract.connect(poster).create(uri, expiry, { value: fee })
+            await contract.connect(poster).create(uri, expiry, { value: fee })
+            expect(await contract.length()).to.eq(4)
+            await contract.remove(2)
+            expect(await contract.length()).to.eq(3)
+
+        })
         describe("validations", function () {
-            it("should revert if not owner")
+            it("should revert if not owner", async function () {
+                const { contract, poster, fee } = await loadFixture(deploy)
+                let expiry = await time.latest()
+                await contract.connect(poster).create(uri, expiry, { value: fee })
+                await expect(contract.connect(poster).remove(0)).to.be.reverted
+            })
         })
         describe("events", function () {
-            it("should emit DeletePost event")
+            it("should emit Remove event", async function () {
+                const { contract, poster, deployer, fee } = await loadFixture(deploy)
+                let expiry = await time.latest()
+                await contract.connect(poster).create(uri, expiry, { value: fee })
+                await expect(contract.remove(0)).to.emit(contract, "Remove").withArgs(
+                    deployer.address, 1
+                )
+            })
         })
     })
     describe("release funds", function () {

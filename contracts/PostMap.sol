@@ -14,7 +14,7 @@ contract PostMap is Ownable {
 
     event SetFee(address sender, uint fee);
     event Create(address sender, string uri, uint expiryTime, uint fee);
-    event Delete(address sender, uint amount);
+    event Remove(address sender, uint amount);
     
     uint public fee;
     bool private autoclean = false;
@@ -57,8 +57,21 @@ contract PostMap is Ownable {
             delete post;
         }
         if (counter > 0) {
-            emit Delete(msg.sender, counter);
+            emit Remove(msg.sender, counter);
         }
+    }
+
+    function remove(uint index_) external onlyOwner {
+        uint len = posts.length;
+        uint last = len - 1;
+        require(index_ < len);
+        if (len > 1) {
+            if (index_ < last) {
+                posts[index_] = posts[last];
+            }
+        }
+        posts.pop();
+        emit Remove(msg.sender, 1);
     }
 
 }
