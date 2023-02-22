@@ -31,13 +31,28 @@ describe("PostMap", function () {
             expect(await contract.length()).to.equal(0)
         })
     })
-    describe("update fee", function () {
-        it("should update the fee")
+    describe("set fee", function () {
+        it("should set the fee", async function () {
+            const { contract } = await loadFixture(deploy)
+            const fee = ethers.utils.parseEther("1.0")
+            await contract.setFee(fee)
+            expect(await contract.fee()).to.eq(fee)
+        })
         describe("validations", function () {
-            it("should revert if not owner")
+            it("should revert if not owner", async function () {
+                const { contract, poster } = await loadFixture(deploy)
+                await expect(contract.connect(poster).setFee(ethers.utils.parseEther("0"))).to.be.reverted
+            })
         })
         describe("events", function() {
-            it("should emit UpdateFee event")
+            it("should emit SetFee event", async function () {
+                const { contract, deployer } = await loadFixture(deploy)
+                const fee = ethers.utils.parseEther("1.0")
+                await expect(contract.setFee(fee)).to.emit(contract, "SetFee").withArgs(
+                    deployer.address,
+                    fee
+                )
+            })
         })
     })
     describe("create post", function () {

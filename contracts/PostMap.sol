@@ -11,6 +11,8 @@ contract PostMap is Ownable {
         string uri;
         uint expiryTime;
     }
+
+    event SetFee(address sender, uint fee);
     
     uint public fee;
 
@@ -22,6 +24,11 @@ contract PostMap is Ownable {
 
     function length() external view returns (uint) {
         return posts.length;
+    }
+
+    function setFee(uint fee_) external onlyOwner {
+        fee = fee_;
+        emit SetFee(msg.sender, fee);
     }
 
 }
