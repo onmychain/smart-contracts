@@ -18,7 +18,6 @@ contract PostMap is Ownable {
     event Remove(address sender, uint amount);
     
     uint public fee;
-    bool private autoclean = false;
     address payable private payee;
 
     Post[] public posts;
@@ -43,9 +42,9 @@ contract PostMap is Ownable {
     }
 
     function create(string calldata uri_, uint expiryTime_) external payable onlyFee {
+        Address.sendValue(payee, address(this).balance);
         posts.push(Post(uri_, expiryTime_));
         emit Create(msg.sender, uri_, expiryTime_, msg.value);
-        Address.sendValue(payee, address(this).balance);
     }
 
     function cleanup() external {
