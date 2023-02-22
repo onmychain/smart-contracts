@@ -44,7 +44,7 @@ describe("PostMap", function () {
                 await expect(contract.connect(poster).setFee(ethers.utils.parseEther("0"))).to.be.reverted
             })
         })
-        describe("events", function() {
+        describe("events", function () {
             it("should emit SetFee event", async function () {
                 const { contract, deployer } = await loadFixture(deploy)
                 const fee = ethers.utils.parseEther("1.0")
@@ -58,11 +58,11 @@ describe("PostMap", function () {
     describe("create post", function () {
         const uri = "some-ipfs-uri"
         let expiry: number
-
+        
         beforeEach(async function () {
             expiry = await time.latest() + (60 * 60)
         })
-
+        
         it("should create a post", async function () {
             const { contract, poster, fee } = await loadFixture(deploy)
             await contract.connect(poster).create(uri, expiry, { value: fee })
@@ -82,14 +82,49 @@ describe("PostMap", function () {
                     uri,
                     expiry,
                     fee
-                )
+                    )
+                })
             })
         })
-    })
     describe("clean up posts", function () {
-        it("should delete old posts")
+
+        const uri = "some-ipfs-uri"
+
+        it("should delete old posts", async function () {
+            const { contract, poster, fee } = await loadFixture(deploy)
+            // create 4 posts
+            let expiry = await time.latest() + 60
+            await contract.connect(poster).create(uri, expiry, { value: fee })
+            expiry += 60
+            await contract.connect(poster).create(uri, expiry, { value: fee })
+            expiry += 60
+            await contract.connect(poster).create(uri, expiry, { value: fee })
+            expiry += 60
+            await contract.connect(poster).create(uri, expiry, { value: fee })
+            expect(await contract.length()).to.eq(4)
+            // increase by 130 seconds
+            // the first two posts are now expired
+            await time.increase(130)
+            await contract.cleanup()
+            expect(await contract.length()).to.eq(2)
+        })
         describe("events", function () {
-            it("should emit DeletePost event")
+            it("should emit DeletePost event", async function () {
+                const { contract, poster, fee } = await loadFixture(deploy)
+                // create 4 posts
+                let expiry = await time.latest() + 60
+                await contract.connect(poster).create(uri, expiry, { value: fee })
+                expiry += 60
+                await contract.connect(poster).create(uri, expiry, { value: fee })
+                expiry += 60
+                await contract.connect(poster).create(uri, expiry, { value: fee })
+                expiry += 60
+                await contract.connect(poster).create(uri, expiry, { value: fee })
+                // increase by 130 seconds
+                // the first two posts are now expired
+                await time.increase(130)
+                await expect(contract.connect(poster).cleanup()).to.emit(contract, "Delete").withArgs(poster.address, 2)
+            })
         })
     })
     describe("remove post", function () {
