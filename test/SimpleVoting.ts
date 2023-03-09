@@ -158,6 +158,11 @@ describe("SimpleVoting", function () {
             await time.increase(2000)
             expect(await contract.winners(0)).to.deep.eq([true, false, false, false])
         })
-        it("should return multiple winners for a tied ballot")
+        it("should return multiple winners for a tied ballot", async function () {
+            const signers = await ethers.getSigners()
+            await contract.connect(signers[4]).cast(0, 2)
+            await time.increase(2000)
+            expect(await contract.winners(0)).to.deep.eq([true, false, true, false])
+        })
     })
 })
