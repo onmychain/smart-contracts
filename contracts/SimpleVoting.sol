@@ -23,6 +23,8 @@ contract SimpleVoting {
         uint startTime_,
         uint duration_
     ) external {
+        require(duration_ > 0, "Duration must be greater than 0");
+        require(startTime_ > block.timestamp, "Start time must be in the future");
         require(options_.length >= 2, "Provide at minimum two options");
         _ballots[counter] = Ballot(question_, options_, startTime_, duration_);
     }
