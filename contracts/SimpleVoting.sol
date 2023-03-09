@@ -23,6 +23,7 @@ contract SimpleVoting {
         uint startTime_,
         uint duration_
     ) external {
+        require(options_.length >= 2, "Provide at minimum two options");
         _ballots[counter] = Ballot(question_, options_, startTime_, duration_);
     }
 

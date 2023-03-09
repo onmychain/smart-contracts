@@ -34,7 +34,21 @@ describe("SimpleVoting", function () {
                 BigNumber.from(duration), // convert from uint
             ])
         })
-        it("should revert if the ballot has less than 2 options")
+        it("should revert if the ballot has less than 2 options", async function () {
+            const { contract } = await loadFixture(deploy)
+            const startTime = await time.latest() + 60 // start the ballot in 60 seconds
+            const duration = 300 // the ballot will be open for 300 seconds
+            const question = "Who is the greatest rapper of all time?"
+            const options = [
+                "Tupac Shakur",
+                // "The Notorious B.I.G.",
+                // "Eminem",
+                // "Jay-Z"
+            ]
+            await expect(contract.createBallot(
+                question, options, startTime, duration
+            )).to.be.revertedWith("Provide at minimum two options")
+        })
         it("should revert if the start time is less than the current time")
         it("should revert if the duration is less than 1")
     })
