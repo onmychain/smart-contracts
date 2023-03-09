@@ -107,7 +107,9 @@ describe("SimpleVoting", function () {
             expect(await contract.hasVoted(0, signer.address)).to.eq(true)
             expect(await contract.getTally(0,0)).to.eq(1)
         })
-        it("should revert if the user tries to vote before the start time")
+        it("should revert if the user tries to vote before the start time", async function () {
+            await expect(contract.cast(0, 0)).to.be.revertedWith("Can't cast before start time")
+        })
         it("should revert if the user tries to vote after the end time")
         it("should revert if the user tries to vote multiple times")
     })
