@@ -1,6 +1,6 @@
 import { loadFixture, time } from "@nomicfoundation/hardhat-network-helpers"
 import { expect } from "chai"
-import { BigNumber } from "ethers"
+import { BigNumber, Contract } from "ethers"
 import { ethers } from "hardhat"
 
 describe("SimpleVoting", function () {
@@ -79,6 +79,37 @@ describe("SimpleVoting", function () {
                 question, options, startTime, duration
             )).to.be.revertedWith("Duration must be greater than 0")
         })
+    })
+    describe("Casting a vote", function () {
+
+        let contract: Contract;
+        const duration = 300 // the ballot will be open for 300 seconds
+
+        beforeEach(async function () {
+            const fixture = { contract } = await loadFixture(deploy)
+            const startTime = await time.latest() + 60 // start the ballot in 60 seconds
+            const question = "Who is the greatest rapper of all time?"
+            const options = [
+                "Tupac Shakur",
+                "The Notorious B.I.G.",
+                "Eminem",
+                "Jay-Z"
+            ]
+            await contract.createBallot(
+                question, options, startTime, duration
+            )
+        })
+
+        it("should be able to vote", async function () {
+            const [signer] = await ethers.getSigners()
+            await time.increase(61) // make sure its ballot is open
+            await contract.cast(0, 0)
+            expect(await contract.hasVoted(0, signer.address)).to.eq(true)
+            expect(await contract.getTally(0,0)).to.eq(1)
+        })
+        it("should revert if the user tries to vote before the start time")
+        it("should revert if the user tries to vote after the end time")
+        it("should revert if the user tries to vote multiple times")
     })
 
 })

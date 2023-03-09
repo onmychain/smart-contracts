@@ -16,6 +16,8 @@ contract SimpleVoting {
     }
 
     mapping(uint => Ballot) private _ballots;
+    mapping(uint => mapping(uint => uint)) private _tally;
+    mapping(uint => mapping(address => bool)) public hasVoted;
 
     function createBallot(
         string memory question_,
@@ -32,5 +34,14 @@ contract SimpleVoting {
 
     function getBallotByIndex(uint index_) external view returns (Ballot memory ballot) {
         ballot = _ballots[index_];
+    }
+
+    function cast(uint ballotIndex_, uint optionIndex_) external {
+        _tally[ballotIndex_][optionIndex_]++;
+        hasVoted[ballotIndex_][msg.sender] = true;
+    }
+
+    function getTally(uint ballotIndex_, uint optionIndex_) external view returns (uint) {
+        return _tally[ballotIndex_][optionIndex_];
     }
 }
