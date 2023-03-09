@@ -154,7 +154,10 @@ describe("SimpleVoting", function () {
                 BigNumber.from(0),
             ])
         })
-        it("should return the winner for a ballot")
+        it("should return the winner for a ballot", async function () {
+            await time.increase(2000)
+            expect(await contract.winners(0)).to.deep.eq([true, false, false, false])
+        })
         it("should return multiple winners for a tied ballot")
     })
 })
