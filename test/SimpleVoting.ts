@@ -120,5 +120,41 @@ describe("SimpleVoting", function () {
             await expect(contract.cast(0,1)).to.be.revertedWith("Address already casted a vote for ballot")
         })
     })
+    describe("Tallying votes", function () {
+        let contract: Contract;
+        const duration = 300 // the ballot will be open for 300 seconds
 
+        beforeEach(async function () {
+            const fixture = { contract } = await loadFixture(deploy)
+            const startTime = await time.latest() + 60 // start the ballot in 60 seconds
+            const question = "Who is the greatest rapper of all time?"
+            const options = [
+                "Tupac Shakur",
+                "The Notorious B.I.G.",
+                "Eminem",
+                "Jay-Z"
+            ]
+            await contract.createBallot(
+                question, options, startTime, duration
+            )
+            await time.increase(200)
+            const signers = await ethers.getSigners()
+            await contract.cast(0,0)
+            await contract.connect(signers[1]).cast(0,0)
+            await contract.connect(signers[2]).cast(0,1)
+            await contract.connect(signers[3]).cast(0,2)
+        })
+
+        it("should return the results for every option", async function () {
+            await time.increase(2000)
+            expect(await contract.results(0)).to.deep.eq([
+                BigNumber.from(2),
+                BigNumber.from(1),
+                BigNumber.from(1),
+                BigNumber.from(0),
+            ])
+        })
+        it("should return the winner for a ballot")
+        it("should return multiple winners for a tied ballot")
+    })
 })

@@ -48,4 +48,14 @@ contract SimpleVoting {
     function getTally(uint ballotIndex_, uint optionIndex_) external view returns (uint) {
         return _tally[ballotIndex_][optionIndex_];
     }
+
+    function results(uint ballotIndex_) external view returns (uint[] memory) {
+        Ballot memory ballot = _ballots[ballotIndex_];
+        uint len = ballot.options.length;
+        uint[] memory result = new uint[](len);
+        for (uint i = 0; i < len; i++) {
+            result[i] = _tally[ballotIndex_][i];
+        }
+        return result;
+    }
 }
