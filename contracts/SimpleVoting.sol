@@ -39,6 +39,7 @@ contract SimpleVoting {
     function cast(uint ballotIndex_, uint optionIndex_) external {
         Ballot memory ballot = _ballots[ballotIndex_];
         require(block.timestamp >= ballot.startTime, "Can't cast before start time");
+        require(block.timestamp < ballot.startTime + ballot.duration, "Can't cast after end time");
         _tally[ballotIndex_][optionIndex_]++;
         hasVoted[ballotIndex_][msg.sender] = true;
     }
