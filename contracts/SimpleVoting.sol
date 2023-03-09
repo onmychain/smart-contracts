@@ -27,6 +27,7 @@ contract SimpleVoting {
         require(startTime_ > block.timestamp, "Start time must be in the future");
         require(options_.length >= 2, "Provide at minimum two options");
         _ballots[counter] = Ballot(question_, options_, startTime_, duration_);
+        counter++;
     }
 
     function getBallotByIndex(uint index_) external view returns (Ballot memory ballot) {
