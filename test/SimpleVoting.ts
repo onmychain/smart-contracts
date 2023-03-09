@@ -114,7 +114,11 @@ describe("SimpleVoting", function () {
             await time.increase(2000)
             await expect(contract.cast(0, 0)).to.be.revertedWith("Can't cast after end time")
         })
-        it("should revert if the user tries to vote multiple times")
+        it("should revert if the user tries to vote multiple times", async function () {
+            await time.increase(61) // make sure its ballot is open
+            await contract.cast(0, 0)
+            await expect(contract.cast(0,1)).to.be.revertedWith("Address already casted a vote for ballot")
+        })
     })
 
 })
